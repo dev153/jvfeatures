@@ -47,6 +47,7 @@ compileJava {
     doFirst {
         options.compilerArgs = [
                 '--module-path', classpath.asPath,
+                '--add-modules', 'javafx.base',
                 '--add-modules', 'javafx.controls',
                 '--add-modules', 'javafx.fxml'
         ]
@@ -70,6 +71,7 @@ run {
     doFirst {
         jvmArgs = [
                 '--module-path', classpath.asPath,
+                '--add-modules', 'javafx.base',
                 '--add-modules', 'javafx.controls',
                 '--add-modules', 'javafx.fxml'
         ]

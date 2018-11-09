@@ -5,6 +5,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -19,36 +20,49 @@ import java.util.jar.JarFile;
  */
 public class App extends Application {
 
+    private static String jarLocationAbsolutePathStr;
+
+    public static void evalJarUrlLocation() {
+        jarLocationAbsolutePathStr = null;
+        try {
+            URL jarLocation = App.class.getProtectionDomain().getCodeSource().getLocation();
+            URI jarLocationUri = jarLocation.toURI();
+            Path jarLocationPath = Paths.get(jarLocationUri);
+            Path jarLocationAbsolutePath = jarLocationPath.toAbsolutePath();
+            jarLocationAbsolutePathStr = jarLocationAbsolutePath.toString();
+        } catch (URISyntaxException ex) {
+            System.err.println(ex.getMessage());
+        }
+    }
+
     public static void main(String[] args) {
+        evalJarUrlLocation();
+        if ( jarLocationAbsolutePathStr == null ) {
+            System.exit(1);
+        }
+        System.out.println(jarLocationAbsolutePathStr);
         launch(args);
     }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
-            URL jarLocation = App.class.getProtectionDomain().getCodeSource().getLocation();
-            URI jarLocationUri = null;
-            jarLocationUri = jarLocation.toURI();
-            Path jarLocationPath = Paths.get(jarLocationUri);
-            Path jarLocationAbsolutePath = jarLocationPath.toAbsolutePath();
-            String jarLocationAbsolutePathStr = jarLocationAbsolutePath.toString();
-            System.out.println(jarLocationAbsolutePathStr);
-            JarFile jarArchive = new JarFile(jarLocationAbsolutePathStr);
-            Enumeration<JarEntry> jarEntries = jarArchive.entries();
-
-//            while( jarEntries.hasMoreElements() ) {
-//                JarEntry jarEntry = jarEntries.nextElement();
-//                System.out.println(jarEntry.toString());
-//            }
-            URL jarFxmlConnection = new URL("jar:file://"+
-                    jarLocationAbsolutePathStr+"/fxml/hello-world.fxml");
+            URL jarFxmlUrl = new URL("jar:file://" + jarLocationAbsolutePathStr + "!/fxml/hello-world.fxml");
+            System.out.println(jarFxmlUrl.toString());
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(jarFxmlConnection);
+            loader.setLocation(jarFxmlUrl);
+            loader.setLocation(jarFxmlUrl);
             VBox vbox = loader.<VBox>load();
+            System.out.println(vbox.getPrefWidth());
+            System.out.println(vbox.getPrefHeight());
             Scene scene = new Scene(vbox);
             primaryStage.setScene(scene);
+            primaryStage.setWidth(vbox.getWidth());
+            primaryStage.setHeight(vbox.getHeight());
             primaryStage.show();
-        } catch (URISyntaxException | IOException e) {
+        } catch (MalformedURLException e) {
             e.printStackTrace();
         }
+
     }
 }
